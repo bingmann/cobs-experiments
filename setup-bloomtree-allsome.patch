@@ -1,0 +1,22 @@
+diff --git a/src/roaring.hh b/src/roaring.hh
+index 6b93c1d..c3c7744 100644
+--- a/src/roaring.hh
++++ b/src/roaring.hh
+@@ -306,7 +306,7 @@ public:
+ 	 * Whether or not we apply copy and write.
+ 	 */
+ 	void setCopyOnWrite(bool val) {
+-		roaring->copy_on_write = val;
++            roaring_bitmap_set_copy_on_write(roaring, val);
+ 	}
+ 
+ 
+@@ -322,7 +322,7 @@ public:
+ 	 * Whether or not copy and write is active.
+ 	 */
+ 	bool getCopyOnWrite() const {
+-		return roaring->copy_on_write;
++            return roaring_bitmap_get_copy_on_write(roaring);
+ 	}
+ 
+ 	/**
