@@ -12,7 +12,7 @@ BASEDIR=${HOME}/dna/
 GITDATE="2019-04-10"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-NCORES=16
+NCORES=$(grep -c ^processor /proc/cpuinfo)
 
 ################################################################################
 # SBT dependencies
