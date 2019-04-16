@@ -11,7 +11,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
-LIST=$(cat $SCRIPT_DIR/list-bigsi-samples.txt)
+LIST=$(cat $SCRIPT_DIR/list-bigsi-data.txt)
 
 (
     for l in $LIST; do

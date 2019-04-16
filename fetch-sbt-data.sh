@@ -11,7 +11,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
-LIST=$(cat $SCRIPT_DIR/list-sbt-experiments.txt)
+LIST=$(cat $SCRIPT_DIR/list-sbt-data.txt)
 
 (
     for l in $LIST; do
