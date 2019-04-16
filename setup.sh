@@ -106,6 +106,22 @@ build_ntCard() {
     make clean
 }
 
+build_seqtk() {
+    VER=1.3
+    [ -e "$BASEDIR/bin/seqtk" ] && return
+
+    cd $BASEDIR
+    rm -rf seqtk-$VER
+    wget -c -O seqtk-$VER.tar.gz \
+         https://github.com/lh3/seqtk/archive/v$VER.tar.gz
+    tar xkf seqtk-$VER.tar.gz
+    rm seqtk-$VER.tar.gz
+
+    cd seqtk-$VER
+    make -j $NCORES BINDIR=$BASEDIR/bin install
+    make clean
+}
+
 ################################################################################
 # Various SBT Variants
 
@@ -153,7 +169,7 @@ build_allsome() {
     cd src
     make -j $NCORES HOME=${BASEDIR}
     cd ../bfcluster
-    make -j $NCORES HOME=${BASEDIR}
+    make -j $NCORES HOME=${BASEDIR} all pcompress
 }
 
 # Build HowDe Sequence Bloom Tree
@@ -182,6 +198,7 @@ build_squeakr() {
     git clone https://github.com/splatlab/squeakr.git
     cd squeakr
     git checkout $(git rev-list -n 1 --before="$GITDATE" master)
+    patch -p1 < ${SCRIPT_DIR}/setup-squeakr.patch
     make -j $NCORES
 }
 
@@ -283,6 +300,7 @@ build_bigsi() {
 ################################################################################
 
 build_all() {
+    build_seqtk
     build_sbt
     build_ssbt
     build_allsome

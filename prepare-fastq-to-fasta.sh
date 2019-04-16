@@ -8,6 +8,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+SEQTK=${BASEDIR}/bin/seqtk
 NCORES=$(grep -c ^processor /proc/cpuinfo)
 
 (
@@ -17,7 +18,7 @@ NCORES=$(grep -c ^processor /proc/cpuinfo)
 
         echo -n \
              mkdir -p fasta/$file \&\& \
-             zcat fastq/$file/*.fastq.gz \| seqtk seq -A \| gzip -9 \> fasta/$file/$file.fasta.gz \&\& \
+             zcat fastq/$file/*.fastq.gz \| $SEQTK seq -A \| gzip -9 \> fasta/$file/$file.fasta.gz \&\& \
              echo fasta/$file/.complete \&\& \
              touch fasta/$file/.complete \&\& \
              rm -rv fastq/$file

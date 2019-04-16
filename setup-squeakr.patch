@@ -1,0 +1,29 @@
+diff --git a/src/SqueakrFS.cc b/src/SqueakrFS.cc
+index 9f5ea42..91e680d 100644
+--- a/src/SqueakrFS.cc
++++ b/src/SqueakrFS.cc
+@@ -13,6 +13,8 @@
+ #include <iostream>
+ #include <algorithm>
+ #include <dirent.h>
++#include <unistd.h>
++#include <fcntl.h>
+ 
+ namespace squeakr {
+   namespace fs {
+@@ -31,14 +33,7 @@ namespace squeakr {
+ 		// Taken from
+ 		// http://stackoverflow.com/questions/12774207/fastest-way-to-check-if-a-file-exist-using-standard-c-c11-c
+ 		bool FileExists(const char* path) {
+-			struct stat fileStat;
+-			if (stat(path, &fileStat)) {
+-				return false;
+-			}
+-			if (!S_ISREG(fileStat.st_mode)) {
+-				return false;
+-			}
+-			return true;
++                        return access(path, F_OK) == 0;
+ 		}
+ 
+ 		// Taken from
