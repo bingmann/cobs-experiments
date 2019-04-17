@@ -5,7 +5,7 @@
 # Copyright (C) 2019 Timo Bingmann <tb@panthema.net>
 ################################################################################
 
-set -e
+set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 source $SCRIPT_DIR/base-tools.sh
@@ -37,18 +37,6 @@ fi
 prob=0.3
 BF_SIZE=$(echo "- $max_doc * l($prob) / (l(2.0) ^ 2)" | bc -l)
 BF_SIZE=$(echo $BF_SIZE/1 | bc)
-
-# make YAML config
-cat > bigsi-config.yaml <<EOF
-## Example config using berkeleyDB
-h: 1
-k: 31
-m: $BF_SIZE
-storage-engine: berkeleydb
-storage-config:
-  filename: bigsi.berkeleydb
-  flag: "c"
-EOF
 
 # make YAML config
 cat > bigsi-config.yaml <<EOF

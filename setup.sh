@@ -6,7 +6,7 @@
 # Copyright (C) 2019 Timo Bingmann <tb@panthema.net>
 ################################################################################
 
-set -e
+set -eo pipefail
 
 BASEDIR=${HOME}/dna/
 GITDATE="2019-04-10"

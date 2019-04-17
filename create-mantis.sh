@@ -5,7 +5,7 @@
 # Copyright (C) 2019 Timo Bingmann <tb@panthema.net>
 ################################################################################
 
-set -e
+set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 source $SCRIPT_DIR/base-tools.sh
@@ -14,11 +14,11 @@ SEQTK=${BASEDIR}/bin/seqtk
 SQUEAKR=${BASEDIR}/squeakr/squeakr
 MANTIS=${BASEDIR}/mantis/build/src/mantis
 MCCORTEX=${BASEDIR}/mccortex/bin/mccortex31
-
+COBS=${BASEDIR}/cobs/build/cobs
 NCORES=$(grep -c ^processor /proc/cpuinfo)
-
 DATADIR=$PWD
 
+if [ ! -e mantis/mantis/dbg_cqf.ser ]; then
 ################################################################################
 # construct squeaker counts in parallel
 
@@ -86,8 +86,26 @@ run_exp "experiment=mantis phase=build_mst" \
     $MANTIS mst -p $PWD/mantis/ -t $NCORES --delete-RRR \
     |& tee ../mantis-build_mst.log
 
+fi
+################################################################################
+# run queries on MANTIS
+
+cd $DATADIR
+
+K=31
+#if [ ! -e "queries.fa" ]; then
+    $COBS generate_queries cortex --positive 1000 --negative 1000 \
+          -k $K -s $((K * 11 / 10)) -N -o queries.fa \
+       |& tee mantis-generate_queries.log
+    grep -v '^>' queries.fa > queries-plain.fa
+#fi
+
 run_exp "experiment=mantis phase=query" \
-    $MANTIS query -k 31 -p $PWD/mantis/ -o $DATADIR/mantis-output.txt $DATADIR/queries.fa \
-    |& tee ../mantis-query.log
+        $MANTIS query -k $K -p $PWD/mantis/mantis/ -o mantis-results.txt \
+        $PWD/queries-plain.fa \
+    |& tee mantis-query.log
+
+perl $SCRIPT_DIR/check-mantis-results.pl queries.fa mantis-results.txt \
+     |& tee mantis-check_results.log
 
 ################################################################################
