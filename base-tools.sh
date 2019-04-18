@@ -7,6 +7,8 @@
 
 BASEDIR=${HOME}/dna
 
+DATASET=$(basename $PWD)
+
 # run experiment and log disk and cpu cycles
 run_exp() {
     exp=$1
@@ -20,7 +22,7 @@ run_exp() {
     before_fill=$(df /dev/md0 | awk '/md0/ { print $3 }')
 
     /usr/bin/time \
-        -f "RESULT $exp info=time time=%e usertime=%U systime=%S rss=%M" \
+        -f "RESULT $exp info=time dataset=$DATASET time=%e usertime=%U systime=%S rss=%M" \
         "$@"
 
     sync
@@ -31,7 +33,18 @@ run_exp() {
     read=$(((after_reads - before_reads) * 512))
     write=$(((after_writes - before_writes) * 512))
     fill=$(((after_fill - before_fill) * 1024))
-    echo "RESULT $exp info=disks read=$read write=$write fill=$fill"
+    echo "RESULT $exp info=disk dataset=$DATASET read=$read write=$write fill=$fill"
+}
+
+# calculate total size of files listed and output a RESULT line
+save_size() {
+    exp=$1
+    shift
+
+    # determine total file size
+    SIZE=$(du -ac "$@" | tail -1 | cut -f 1)
+
+    echo "RESULT $exp info=size dataset=$DATASET size=$SIZE"
 }
 
 ################################################################################

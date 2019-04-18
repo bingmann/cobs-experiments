@@ -26,11 +26,13 @@ NCORES=$(grep -c ^processor /proc/cpuinfo)
 
 if [ -e fasta ]; then
 
-    max_doc=$($HOME/cobs/b/cobs doc_list -k 31 fasta/ | awk '/^maximum 31-mer/ { print $3 }')
+    K=20
+    max_doc=$($HOME/cobs/build/cobs doc_list -k 20 fasta/ | awk '/^maximum 20-mer/ { print $3 }')
 
 elif [ -e cortex ]; then
 
-    max_doc=$($HOME/cobs/b/cobs doc_list -k 31 cortex/ | awk '/^maximum 31-mer/ { print $3 }')
+    K=31
+    max_doc=$($HOME/cobs/build/cobs doc_list -k 31 cortex/ | awk '/^maximum 31-mer/ { print $3 }')
 
 fi
 
@@ -42,18 +44,19 @@ BF_SIZE=$(echo $BF_SIZE/1 | bc)
 cat > bigsi-config.yaml <<EOF
 ## Example config using rocksdb
 h: 1
-k: 31
+k: $K
 m: $BF_SIZE
 nproc: 4
 storage-engine: rocksdb
 storage-config:
-  filename: bigsi.rocksdb
+  filename: bigsi/bigsi.rocksdb
   options:
     create_if_missing: true
     max_open_files: 5000
   read_only: false ## Change to true for read only access
 EOF
 
+if [ ! -e bigsi/bigsi.rocksdb ]; then
 ################################################################################
 # construct bloom filters in parallel
 
@@ -62,7 +65,7 @@ mkdir -p bigsi/cortex
 if [ -e fasta ]; then
 
     # convert fasta to cortex (separate time measurement)
-    export MCCORTEX NCORES
+    export K MCCORTEX NCORES
     run_exp "experiment=bigsi phase=make_ctx" bash -c '
 (
     for f in fasta/*; do
@@ -71,7 +74,7 @@ if [ -e fasta ]; then
 
         echo -n \
              zcat "$f/*.gz" \| \
-             $MCCORTEX build --kmer 31 --threads 8 --mem 32G \
+             $MCCORTEX build --kmer $K --threads 8 --mem 32G \
                  --sample $(basename "$f") --seq /dev/stdin --force "$CTX"
         echo -ne "\\0"
     done
@@ -124,6 +127,14 @@ fi
 run_exp "experiment=bigsi phase=build" \
     $BIGSI build --config bigsi-config.yaml bigsi/bloom/* \
     |& tee bigsi-build.log
+
+save_size "experiment=bigsi phase=index" \
+          bigsi/bigsi.rocksdb \
+    |& tee bigsi-indexsize.log
+
+fi
+################################################################################
+# run queries on BIGSI
 
 run_exp "experiment=bigsi phase=query" \
     $BIGSI search --config bigsi-config.yaml -t 0.9 \

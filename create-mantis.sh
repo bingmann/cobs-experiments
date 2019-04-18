@@ -18,6 +18,8 @@ COBS=${BASEDIR}/cobs/build/cobs
 NCORES=$(grep -c ^processor /proc/cpuinfo)
 DATADIR=$PWD
 
+ulimit -n 1000000
+
 if [ ! -e mantis/mantis/dbg_cqf.ser ]; then
 ################################################################################
 # construct squeaker counts in parallel
@@ -27,7 +29,7 @@ mkdir -p mantis/squeakr
 if [ -e fasta ]; then
 
     export SEQTK SQUEAKR NCORES
-    run_exp "experiment=mantis phase=squeakr" bash -c '
+    run_exp "experiment=mantis phase=bloom" bash -c '
 (
     for f in fasta/*; do
         OUT="$PWD/mantis/squeakr/$(basename "$f").squeakr"
@@ -49,7 +51,7 @@ if [ -e fasta ]; then
 elif [ -e cortex ]; then
 
     export MCCORTEX SCRIPT_DIR SQUEAKR NCORES
-    run_exp "experiment=mantis phase=squeakr" bash -c '
+    run_exp "experiment=mantis phase=bloom" bash -c '
 (
     for f in cortex/*; do
         OUT="$PWD/mantis/squeakr/$(basename "$f").squeakr"
@@ -59,9 +61,9 @@ elif [ -e cortex ]; then
 
         echo -n \
             mkfifo "$FIFO" \&\& \
-            $MCCORTEX view -q -k $f/*/*.ctx \| \
+            \($MCCORTEX view -q -k $f/*/*.ctx \| \
             awk -f $SCRIPT_DIR/cortex-to-fastq.awk \> "$FIFO" \& \
-            $SQUEAKR count --exact -k 31 -c 1 -t 1 -o "$OUT.tmp" "$FIFO" \&\& \
+            $SQUEAKR count --exact -k 31 -c 1 -t 1 -o "$OUT.tmp" "$FIFO"\) \&\& \
             mv "$OUT.tmp" "$OUT" \&\& \
             rm "$FIFO"
         echo -ne "\\0"
@@ -77,14 +79,17 @@ fi
 cd mantis
 ls squeakr/*.squeakr > mantis-input.txt
 
-ulimit -n 1000000
-run_exp "experiment=mantis phase=mantis" \
+run_exp "experiment=mantis phase=build" \
     $MANTIS build -s 31 -i mantis-input.txt -o mantis/ \
     |& tee ../mantis-mantis.log
 
-run_exp "experiment=mantis phase=build_mst" \
+run_exp "experiment=mantis phase=compress" \
     $MANTIS mst -p $PWD/mantis/ -t $NCORES --delete-RRR \
     |& tee ../mantis-build_mst.log
+
+save_size "experiment=mantis phase=index" \
+          mantis/* \
+    |& tee ../mantis-indexsize.log
 
 fi
 ################################################################################
@@ -93,19 +98,17 @@ fi
 cd $DATADIR
 
 K=31
-#if [ ! -e "queries.fa" ]; then
-    $COBS generate_queries cortex --positive 1000 --negative 1000 \
-          -k $K -s $((K * 11 / 10)) -N -o queries.fa \
-       |& tee mantis-generate_queries.log
-    grep -v '^>' queries.fa > queries-plain.fa
-#fi
+$COBS generate_queries cortex --positive 100000 --negative 100000 \
+      -k $K -s $((K + 1)) -N -o mantis-queries.fa \
+    |& tee mantis-generate_queries.log
+grep -v '^>' mantis-queries.fa > mantis-queries-plain.fa
 
 run_exp "experiment=mantis phase=query" \
         $MANTIS query -k $K -p $PWD/mantis/mantis/ -o mantis-results.txt \
-        $PWD/queries-plain.fa \
+        $PWD/mantis-queries-plain.fa \
     |& tee mantis-query.log
 
-perl $SCRIPT_DIR/check-mantis-results.pl queries.fa mantis-results.txt \
+perl $SCRIPT_DIR/check-mantis-results.pl mantis-queries.fa mantis-results.txt \
      |& tee mantis-check_results.log
 
 ################################################################################

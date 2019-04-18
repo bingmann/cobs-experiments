@@ -57,7 +57,7 @@ mkdir -p howde/bf
 if [ -e fasta ]; then
 
     export K BT BF_SIZE NCORES
-    run_exp "experiment=howde phase=make_bf" bash -c '
+    run_exp "experiment=howde phase=bloom" bash -c '
 (
     for f in fasta/*; do
         OUT="howde/bf/$(basename "$f").bf"
@@ -74,7 +74,7 @@ if [ -e fasta ]; then
 elif [ -e cortex ]; then
 
     export K BT BF_SIZE MCCORTEX NCORES
-    run_exp "experiment=howde phase=make_bf" bash -c "
+    run_exp "experiment=howde phase=bloom" bash -c "
 (
     for f in cortex/*; do
         OUT=\"howde/bf/\$(basename \$f).bf\"
@@ -97,7 +97,7 @@ fi
 cd howde
 
 ls bf/*.bf > howde-leafnames.txt
-run_exp "experiment=howde phase=cluster" \
+run_exp "experiment=howde phase=build" \
         $BT cluster --list=howde-leafnames.txt --bits=$((BF_SIZE)) \
         --tree=howde-union.sbt --nodename=node{number} --keepallnodes \
     |& tee ../howde-make_howde.log
@@ -107,20 +107,22 @@ run_exp "experiment=howde phase=compress" \
         $BT build --HowDe --tree=howde-union.sbt --outtree=howde-howde.sbt \
     |& tee ../howde-compress.log
 
+save_size "experiment=howde phase=index" \
+          howde-howde.sbt *.rrr.bf \
+    |& tee ../howde-indexsize.log
+
 fi
 ################################################################################
 # run queries on SBT
 
 cd $DATADIR
 
-#if [ ! -e queries.fa ]; then
-    $COBS generate_queries cortex --positive 100000 --negative 100000 \
-          -k $K -s $((K + 1)) -N -o queries.fa \
-        |& tee sbt-generate_queries.log
-#fi
+$COBS generate_queries cortex --positive 100000 --negative 100000 \
+      -k $K -s $((K + 1)) -N -o howde-queries.fa \
+    |& tee sbt-generate_queries.log
 
 run_exp "experiment=howde phase=query" \
-        $BT query --tree=howde/howde-howde.sbt --threshold=0.5 queries.fa \
+        $BT query --tree=howde/howde-howde.sbt --threshold=0.5 howde-queries.fa \
         --out=howde-results.txt \
      >& howde-query.log
 

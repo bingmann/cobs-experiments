@@ -61,7 +61,7 @@ mkdir -p allsome
 if [ -e fasta ]; then
 
     export BT BF_SIZE NCORES
-    run_exp "experiment=allsome phase=make_bf" bash -c '
+    run_exp "experiment=allsome phase=bloom" bash -c '
 (
     for f in fastq/*; do
         OUT="allsome/$(basename "$f").bf.bv"
@@ -78,7 +78,7 @@ if [ -e fasta ]; then
 elif [ -e cortex ]; then
 
     export K BT BF_SIZE MCCORTEX NCORES
-    run_exp "experiment=allsome phase=make_bf" bash -c "
+    run_exp "experiment=allsome phase=bloom" bash -c "
 (
     for f in cortex/*; do
         OUT=\"allsome/\$(basename \$f).bf.bv\"
@@ -99,32 +99,34 @@ fi
 # construct and compress ALLSOME
 
 ls allsome/*.bf.bv > allsome-listoffiles.txt
-run_exp "experiment=allsome phase=make_sbt" \
+run_exp "experiment=allsome phase=build" \
     $BT build allsome-hashfile.hh allsome-listoffiles.txt allsome-bloomtreefile \
     |& tee allsome-make_allsome.log
 
 # TODO: parallel compress!
-run_exp "experiment=allsome phase=compress_sbt" \
+run_exp "experiment=allsome phase=compress" \
     $BT compress allsome-bloomtreefile allsome-compressedbloomtreefile \
     |& tee allsome-compress.log
+
+save_size "experiment=allsome phase=index" \
+          allsome-compressedbloomtreefile allsome/*.rrr \
+    |& tee allsome-indexsize.log
 
 fi
 ################################################################################
 
-#if [ ! -e queries.fa ]; then
-    $COBS generate_queries cortex --positive 100000 --negative 100000 \
-          -k $K -s $((K + 1)) -N -o queries.fa \
-        |& tee allsome-generate_queries.log
-#fi
+$COBS generate_queries cortex --positive 100000 --negative 100000 \
+      -k $K -s $((K + 1)) -N -o allsome-queries.fa \
+    |& tee allsome-generate_queries.log
 
 # for SBTs, the threshold is the % of kmers in the query having to match: 50%
 # due to expansion with 1 random character
 run_exp "experiment=allsome phase=query" \
         $BT query --query-threshold 0.5 \
-        allsome-compressedbloomtreefile queries.fa allsome-results.txt \
+        allsome-compressedbloomtreefile allsome-queries.fa allsome-results.txt \
     |& tee allsome-query.log
 
-perl $SCRIPT_DIR/check-allsome-results.pl queries.fa allsome-results.txt \
-    >& allsome-check_results.log
+perl $SCRIPT_DIR/check-allsome-results.pl allsome-queries.fa allsome-results.txt \
+     >& allsome-check_results.log
 
 ################################################################################

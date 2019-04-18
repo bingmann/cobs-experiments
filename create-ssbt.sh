@@ -57,7 +57,7 @@ mkdir -p ssbt
 if [ -e fasta ]; then
 
     export BT BF_SIZE NCORES
-    run_exp "experiment=ssbt phase=make_bf" bash -c '
+    run_exp "experiment=ssbt phase=bloom" bash -c '
 (
     for f in fasta/*; do
         OUT="ssbt/$(basename "$f").sim.bf.bv"
@@ -73,7 +73,7 @@ if [ -e fasta ]; then
 
 elif [ -e cortex ]; then
 
-    run_exp "experiment=ssbt phase=make_bf" bash -c "
+    run_exp "experiment=ssbt phase=bloom" bash -c "
 (
     for f in cortex/*; do
         OUT=\"ssbt/\$(basename \$f).sim.bf.bv\"
@@ -94,33 +94,35 @@ fi
 # construct and compress SSBT
 
 ls ssbt/*.sim.bf.bv > ssbt-listoffiles.txt
-run_exp "experiment=ssbt phase=make_sbt" \
+run_exp "experiment=ssbt phase=build" \
     $BT build ssbt-hashfile.hh ssbt-listoffiles.txt ssbt-bloomtreefile \
     |& tee ssbt-make_ssbt.log
 
-run_exp "experiment=ssbt phase=compress_sbt" \
+run_exp "experiment=ssbt phase=compress" \
     $BT compress ssbt-bloomtreefile ssbt-compressedbloomtreefile \
     |& tee ssbt-compress.log
+
+save_size "experiment=ssbt phase=index" \
+          ssbt-compressedbloomtreefile ssbt/*.rrr \
+    |& tee ssbt-indexsize.log
 
 fi
 ################################################################################
 # run queries on SSBT
 
-#if [ ! -e "queries.fa" ]; then
-    $COBS generate_queries cortex --positive 100000 --negative 100000 \
-          -k $K -s $((K + 1)) -N -o queries.fa \
-        |& tee ssbt-generate_queries.log
-    grep -v '^>' queries.fa > queries-plain.fa
-#fi
+$COBS generate_queries cortex --positive 100000 --negative 100000 \
+      -k $K -s $((K + 1)) -N -o ssbt-queries.fa \
+    |& tee ssbt-generate_queries.log
+grep -v '^>' ssbt-queries.fa > ssbt-queries-plain.fa
 
 # for SBTs, the threshold is the % of kmers in the query having to match: 50%
 # due to expansion with 1 random character
 run_exp "experiment=ssbt phase=query" \
         $BT query --query-threshold 0.5 \
-        ssbt-compressedbloomtreefile queries-plain.fa ssbt-results.txt \
+        ssbt-compressedbloomtreefile ssbt-queries-plain.fa ssbt-results.txt \
     >& ssbt-query.log
 
-perl $SCRIPT_DIR/check-sbt-results.pl queries.fa ssbt-results.txt \
+perl $SCRIPT_DIR/check-sbt-results.pl ssbt-queries.fa ssbt-results.txt \
      |& tee ssbt-check_results.log
 
 ################################################################################
