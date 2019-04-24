@@ -13,10 +13,7 @@ source $SCRIPT_DIR/base-tools.sh
 export LD_LIBRARY_PATH=${HOME}/dna/lib
 
 BT=${BASEDIR}/HowDeSBT/howdesbt
-NTCARD=${BASEDIR}/bin/ntcard
-MCCORTEX=${BASEDIR}/mccortex/bin/mccortex31
-COBS=${BASEDIR}/cobs/build/cobs
-NCORES=$(grep -c ^processor /proc/cpuinfo)
+
 DATADIR=$PWD
 
 ################################################################################
@@ -117,16 +114,14 @@ fi
 
 cd $DATADIR
 
-$COBS generate_queries cortex --positive 100000 --negative 100000 \
-      -k $K -s $((K + 1)) -N -o howde-queries.fa \
-    |& tee sbt-generate_queries.log
+for Q in 1 100 1000 10000; do
+    run_exp "experiment=howde phase=query$Q" \
+            $BT query --tree=howde/howde-howde.sbt --threshold=0.5 queries$Q.fa \
+            --out=howde-results$Q.txt \
+            >& howde-query$Q.log
 
-run_exp "experiment=howde phase=query" \
-        $BT query --tree=howde/howde-howde.sbt --threshold=0.5 howde-queries.fa \
-        --out=howde-results.txt \
-     >& howde-query.log
-
-perl $SCRIPT_DIR/check-howde-results.pl howde-results.txt \
-     >& howde-check_results.log
+    perl $SCRIPT_DIR/check-howde-cobs-results.pl howde-results$Q.txt \
+         >& howde-check_results$Q.log
+done
 
 ################################################################################

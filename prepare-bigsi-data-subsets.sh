@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 ################################################################################
 # Script to prepare subsets of the BIGSI experiment set
 #

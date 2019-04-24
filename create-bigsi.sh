@@ -13,13 +13,11 @@ source $SCRIPT_DIR/base-tools.sh
 BASEDIR=${HOME}/dna/
 BIGSI_HOME=${BASEDIR}/bigsi
 BIGSI=${BASEDIR}/bigsi/bin/bigsi
-NTCARD=${BASEDIR}/bin/ntcard
-MCCORTEX=${BASEDIR}/mccortex/bin/mccortex31
 
 # enter virtualenv
 source $BIGSI_HOME/bin/activate
 
-NCORES=$(grep -c ^processor /proc/cpuinfo)
+ulimit -n 1000000
 
 ################################################################################
 # use COBS to estimate bloom filter size
@@ -46,14 +44,15 @@ cat > bigsi-config.yaml <<EOF
 h: 1
 k: $K
 m: $BF_SIZE
-nproc: 4
+nproc: $NCORES
+low_mem_build: false
 storage-engine: rocksdb
 storage-config:
   filename: bigsi/bigsi.rocksdb
   options:
     create_if_missing: true
     max_open_files: 5000
-  read_only: false ## Change to true for read only access
+  read_only: false
 EOF
 
 if [ ! -e bigsi/bigsi.rocksdb ]; then
@@ -136,9 +135,13 @@ fi
 ################################################################################
 # run queries on BIGSI
 
+$COBS generate-queries cortex --positive 10 --negative 10 \
+      -k $K -s $((K + 1)) -N -o bigsi-queries.fa \
+    |& tee bigsi-generate_queries.log
+
 run_exp "experiment=bigsi phase=query" \
-    $BIGSI search --config bigsi-config.yaml -t 0.9 \
-    AGGTTTGTTTTCTGATATTTGAAAATCGAGA \
+    $BIGSI bulk_search --config bigsi-config.yaml -t 0.5 \
+    bigsi-queries.fa \
     |& tee bigsi-query.log
 
 ################################################################################

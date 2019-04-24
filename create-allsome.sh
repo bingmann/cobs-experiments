@@ -15,11 +15,6 @@ export LD_LIBRARY_PATH=${HOME}/dna/lib
 BT=${BASEDIR}/bloomtree-allsome/src/bt
 BFCLUSTER=${BASEDIR}/bloomtree-allsome/bfcluster/sbuild
 
-NTCARD=${BASEDIR}/bin/ntcard
-MCCORTEX=${BASEDIR}/mccortex/bin/mccortex31
-COBS=${BASEDIR}/cobs/build/cobs
-NCORES=$(grep -c ^processor /proc/cpuinfo)
-
 ################################################################################
 # use ntcard to estimate bloom filter size
 
@@ -114,19 +109,18 @@ save_size "experiment=allsome phase=index" \
 
 fi
 ################################################################################
+# run queries on ALLSOME
 
-$COBS generate_queries cortex --positive 100000 --negative 100000 \
-      -k $K -s $((K + 1)) -N -o allsome-queries.fa \
-    |& tee allsome-generate_queries.log
+for Q in 1 100 1000 10000; do
+    # for SBTs, the threshold is the % of kmers in the query having to match: 50%
+    # due to expansion with 1 random character
+    run_exp "experiment=allsome phase=query$Q" \
+            $BT query --query-threshold 0.5 \
+            allsome-compressedbloomtreefile queries$Q.fa allsome-results$Q.txt \
+            >& allsome-query$Q.log
 
-# for SBTs, the threshold is the % of kmers in the query having to match: 50%
-# due to expansion with 1 random character
-run_exp "experiment=allsome phase=query" \
-        $BT query --query-threshold 0.5 \
-        allsome-compressedbloomtreefile allsome-queries.fa allsome-results.txt \
-    |& tee allsome-query.log
-
-perl $SCRIPT_DIR/check-allsome-results.pl allsome-queries.fa allsome-results.txt \
-     >& allsome-check_results.log
+    perl $SCRIPT_DIR/check-allsome-results.pl queries$Q.fa allsome-results$Q.txt \
+         >& allsome-check_results$Q.log
+done
 
 ################################################################################

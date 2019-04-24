@@ -7,6 +7,12 @@
 
 BASEDIR=${HOME}/dna
 
+COBS=${BASEDIR}/cobs/b129/cobs
+NTCARD=${BASEDIR}/bin/ntcard
+MCCORTEX=${BASEDIR}/mccortex/bin/mccortex31
+
+NCORES=$(grep -c ^processor /proc/cpuinfo)
+
 DATASET=$(basename $PWD)
 
 # run experiment and log disk and cpu cycles

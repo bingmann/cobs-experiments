@@ -22,7 +22,7 @@ while (my $info = <Q>) {
     chomp($query);
 
     print "Q: $info\n";
-    if ($info eq ">negative") {
+    if ($info =~ /^>negative[0-9]+/) {
         die($answer) unless $answer =~ /^seq[0-9]+\s([0-9]+)$/;
 
         # count results
@@ -46,7 +46,7 @@ while (my $info = <Q>) {
             $answer = <A>;
             chomp($answer);
 
-            last unless $answer =~ /^squeakr\/([^.]+)\.squeakr\s+/;
+            last unless $answer =~ /^squeakr\/([^.]+)\.squeakr\s+([0-9]+)$/;
 
             if ($1 eq $target) {
                 print "Target $target matched\n";

@@ -11,10 +11,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 source $SCRIPT_DIR/base-tools.sh
 
 BT=${BASEDIR}/bloomtree/src/bt
-NTCARD=${BASEDIR}/bin/ntcard
-MCCORTEX=${BASEDIR}/mccortex/bin/mccortex31
-COBS=${BASEDIR}/cobs/build/cobs
-NCORES=$(grep -c ^processor /proc/cpuinfo)
 
 ################################################################################
 # use ntcard to estimate bloom filter size
@@ -110,19 +106,16 @@ fi
 ################################################################################
 # run queries on SBT
 
-$COBS generate_queries cortex --positive 100000 --negative 100000 \
-      -k $K -s $((K + 1)) -N -o sbt-queries.fa \
-    |& tee sbt-generate_queries.log
-grep -v '^>' sbt-queries.fa > sbt-queries-plain.fa
+for Q in 1 100 1000 10000; do
+    # for SBTs, the threshold is the % of kmers in the query having to match: 50%
+    # due to expansion with 1 random character
+    run_exp "experiment=sbt phase=query$Q" \
+            $BT query --query-threshold 0.5 \
+            sbt-compressedbloomtreefile queries$Q-plain.fa sbt-results$Q.txt \
+            >& sbt-query$Q.log
 
-# for SBTs, the threshold is the % of kmers in the query having to match: 50%
-# due to expansion with 1 random character
-run_exp "experiment=sbt phase=query" \
-        $BT query --query-threshold 0.5 \
-        sbt-compressedbloomtreefile sbt-queries-plain.fa sbt-results.txt \
-    >& sbt-query.log
-
-perl $SCRIPT_DIR/check-sbt-results.pl sbt-queries.fa sbt-results.txt \
-    >& sbt-check_results.log
+    perl $SCRIPT_DIR/check-sbt-results.pl queries$Q.fa sbt-results$Q.txt \
+         >& sbt-check_results$Q.log
+done
 
 ################################################################################

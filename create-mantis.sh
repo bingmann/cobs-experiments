@@ -13,9 +13,6 @@ source $SCRIPT_DIR/base-tools.sh
 SEQTK=${BASEDIR}/bin/seqtk
 SQUEAKR=${BASEDIR}/squeakr/squeakr
 MANTIS=${BASEDIR}/mantis/build/src/mantis
-MCCORTEX=${BASEDIR}/mccortex/bin/mccortex31
-COBS=${BASEDIR}/cobs/build/cobs
-NCORES=$(grep -c ^processor /proc/cpuinfo)
 DATADIR=$PWD
 
 ulimit -n 1000000
@@ -96,19 +93,16 @@ fi
 # run queries on MANTIS
 
 cd $DATADIR
-
 K=31
-$COBS generate_queries cortex --positive 100000 --negative 100000 \
-      -k $K -s $((K + 1)) -N -o mantis-queries.fa \
-    |& tee mantis-generate_queries.log
-grep -v '^>' mantis-queries.fa > mantis-queries-plain.fa
 
-run_exp "experiment=mantis phase=query" \
-        $MANTIS query -k $K -p $PWD/mantis/mantis/ -o mantis-results.txt \
-        $PWD/mantis-queries-plain.fa \
-    |& tee mantis-query.log
+for Q in 1 100 1000 10000; do
+    run_exp "experiment=mantis phase=query$Q" \
+            $MANTIS query -k $K -p $PWD/mantis/mantis/ -o mantis-results$Q.txt \
+            $PWD/queries$Q-plain.fa \
+        |& tee mantis-query$Q.log
 
-perl $SCRIPT_DIR/check-mantis-results.pl mantis-queries.fa mantis-results.txt \
-     |& tee mantis-check_results.log
+    perl $SCRIPT_DIR/check-mantis-results.pl queries$Q.fa mantis-results$Q.txt \
+        |& tee mantis-check_results$Q.log
+done
 
 ################################################################################
