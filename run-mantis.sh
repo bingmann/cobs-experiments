@@ -99,10 +99,10 @@ for Q in 1 100 1000 10000; do
     run_exp "experiment=mantis phase=query$Q" \
             $MANTIS query -k $K -p $PWD/mantis/mantis/ -o mantis-results$Q.txt \
             $PWD/queries$Q-plain.fa \
-        |& tee mantis-query$Q.log
+        >& mantis-query$Q.log
 
     perl $SCRIPT_DIR/check-mantis-results.pl queries$Q.fa mantis-results$Q.txt \
-        |& tee mantis-check_results$Q.log
+        >& mantis-check_results$Q.log
 done
 
 ################################################################################

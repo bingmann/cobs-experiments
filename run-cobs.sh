@@ -12,6 +12,8 @@ source $SCRIPT_DIR/base-tools.sh
 
 BASEDIR=${HOME}/dna/
 
+ulimit -n 1000000
+
 ################################################################################
 # use COBS to estimate bloom filter size
 
@@ -27,7 +29,7 @@ if [ ! -e cobs-classic ]; then
 
 run_exp "experiment=cobs_classic phase=build" \
     $COBS classic-construct --term-size $K --clobber cortex cobs-classic \
-    --false-positive-rate 0.1 --canonicalize \
+    --false-positive-rate 0.3 --canonicalize \
     |& tee cobs_classic-build.log
 
 save_size "experiment=cobs_classic phase=index" \
@@ -42,7 +44,7 @@ if [ ! -e cobs-compact ]; then
 
 run_exp "experiment=cobs_compact phase=build" \
     $COBS compact-construct --term-size $K --clobber cortex cobs-compact \
-    --false-positive-rate 0.1 --canonicalize \
+    --false-positive-rate 0.3 --canonicalize \
     |& tee cobs_comapct-build.log
 
 save_size "experiment=cobs_compact phase=index" \
@@ -55,7 +57,8 @@ fi
 
 for Q in 1 100 1000 10000; do
     run_exp "experiment=cobs_classic phase=query$Q" \
-        $COBS query --threshold 0.9 -i cobs-classic/index.cobs_classic -f queries$Q.fa \
+            $COBS query --threshold 0.9 -i cobs-classic/index.cobs_classic \
+            --load-complete -f queries$Q.fa \
             >& cobs_classic-results$Q.log
 
     perl $SCRIPT_DIR/check-howde-cobs-results.pl cobs_classic-results$Q.log \
@@ -63,7 +66,8 @@ for Q in 1 100 1000 10000; do
 
 
     run_exp "experiment=cobs_compact phase=query$Q" \
-        $COBS query --threshold 0.9 -i cobs-compact/index.cobs_compact -f queries$Q.fa \
+            $COBS query --threshold 0.9 -i cobs-compact/index.cobs_compact \
+            --load-complete -f queries$Q.fa \
             >& cobs_compact-results$Q.log
 
     perl $SCRIPT_DIR/check-howde-cobs-results.pl cobs_compact-results$Q.log \
