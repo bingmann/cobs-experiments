@@ -28,12 +28,12 @@ if [ ! -e cobs-classic ]; then
 # construct compressed COBS index
 
 run_exp "experiment=cobs_classic phase=build" \
-    $COBS classic-construct --term-size $K --clobber cortex cobs-classic \
+    $COBS classic-construct --term-size $K --clobber cortex cobs-index.cobs-classic \
     --false-positive-rate 0.3 --canonicalize \
     |& tee cobs_classic-build.log
 
 save_size "experiment=cobs_classic phase=index" \
-    cobs-classic \
+    cobs-index.cobs-classic \
     |& tee cobs_classic-indexsize.log
 
 fi
@@ -43,12 +43,12 @@ if [ ! -e cobs-compact ]; then
 # construct compressed COBS index
 
 run_exp "experiment=cobs_compact phase=build" \
-    $COBS compact-construct --term-size $K --clobber cortex cobs-compact \
+    $COBS compact-construct --term-size $K --clobber cortex cobs-index.cobs-compact \
     --false-positive-rate 0.3 --canonicalize \
     |& tee cobs_comapct-build.log
 
 save_size "experiment=cobs_compact phase=index" \
-    cobs-compact \
+    cobs-index.cobs-compact \
     |& tee cobs_compact-indexsize.log
 
 fi
@@ -57,7 +57,7 @@ fi
 
 for Q in 1 100 1000 10000; do
     run_exp "experiment=cobs_classic phase=query$Q" \
-            $COBS query --threshold 0.9 -i cobs-classic/index.cobs_classic \
+            $COBS query --threshold 0.9 -i cobs-index.cobs_classic \
             --load-complete -f queries$Q.fa \
             >& cobs_classic-results$Q.log
 
@@ -66,7 +66,7 @@ for Q in 1 100 1000 10000; do
 
 
     run_exp "experiment=cobs_compact phase=query$Q" \
-            $COBS query --threshold 0.9 -i cobs-compact/index.cobs_compact \
+            $COBS query --threshold 0.9 -i cobs-index.cobs_compact \
             --load-complete -f queries$Q.fa \
             >& cobs_compact-results$Q.log
 
