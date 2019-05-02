@@ -7,7 +7,7 @@
 
 BASEDIR=${HOME}/dna
 
-COBS=${BASEDIR}/cobs/b135/cobs
+COBS=${BASEDIR}/cobs/b135/src/cobs
 NTCARD=${BASEDIR}/bin/ntcard
 MCCORTEX=${BASEDIR}/mccortex/bin/mccortex31
 
