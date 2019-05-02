@@ -109,13 +109,35 @@ fi
 for Q in 1 100 1000 10000; do
     # for SBTs, the threshold is the % of kmers in the query having to match: 50%
     # due to expansion with 1 random character
-    run_exp "experiment=sbt phase=query$Q" \
-            $BT query --query-threshold 0.5 \
-            sbt-compressedbloomtreefile queries$Q-plain.fa sbt-results$Q.txt \
-            >& sbt-query$Q.log
 
-    perl $SCRIPT_DIR/check-sbt-results.pl queries$Q.fa sbt-results$Q.txt \
-         >& sbt-check_results$Q.log
+    run_exp "experiment=sbt phase=query$Q.0" \
+            $BT query --query-threshold 0.5 \
+            sbt-compressedbloomtreefile queries$Q-plain.fa sbt-results$Q.0.txt \
+            >& sbt-query$Q.0.log
+
+    RESULT="experiment=sbt phase=check$Q.0" \
+    perl $SCRIPT_DIR/check-sbt-results.pl queries$Q.fa sbt-results$Q.0.txt \
+         >& sbt-check_results$Q.0.log
+
+    NO_DROP_CACHE=1 \
+    run_exp "experiment=sbt phase=query$Q.1" \
+            $BT query --query-threshold 0.5 \
+            sbt-compressedbloomtreefile queries$Q-plain.fa sbt-results$Q.1.txt \
+            >& sbt-query$Q.1.log
+
+    RESULT="experiment=sbt phase=check$Q.1" \
+    perl $SCRIPT_DIR/check-sbt-results.pl queries$Q.fa sbt-results$Q.1.txt \
+         >& sbt-check_results$Q.1.log
+
+    NO_DROP_CACHE=1 \
+    run_exp "experiment=sbt phase=query$Q.2" \
+            $BT query --query-threshold 0.5 \
+            sbt-compressedbloomtreefile queries$Q-plain.fa sbt-results$Q.2.txt \
+            >& sbt-query$Q.2.log
+
+    RESULT="experiment=sbt phase=check$Q.2" \
+    perl $SCRIPT_DIR/check-sbt-results.pl queries$Q.fa sbt-results$Q.2.txt \
+         >& sbt-check_results$Q.2.log
 done
 
 ################################################################################

@@ -22,7 +22,7 @@ run_exp() {
 
     # drop disk caches, get current counters
     sync
-    /usr/bin/setuid-drop-disk-caches
+    [ $NO_DROP_CACHE ] || /usr/bin/setuid-drop-disk-caches
     before_reads=$(awk '$3 ~ /^md0$/ { print $6 }' /proc/diskstats)
     before_writes=$(awk '$3 ~ /^md0$/ { print $10 }' /proc/diskstats)
     before_fill=$(df /dev/md0 | awk '/md0/ { print $3 }')

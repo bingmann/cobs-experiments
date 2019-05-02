@@ -27,56 +27,42 @@ while (my $info = <Q>) {
 
         my $answer = <A>;
         chomp($answer);
+        my @a = split('\t', $answer);
 
-        die unless $answer =~ /^\*$query ([0-9]+)$/;
-        my $results = $1;
+        die($answer) unless $a[0] =~ /^transcript# ([0-9]+)$/;
+        shift(@a);
+
+        my $results = 0;
+        foreach my $a (@a) {
+            ++$results if $a;
+        }
 
         $false_positives_count += $results;
-        $false_positives++ if $results != 0;
-
-        $answer = <A>;
-        chomp($answer);
-        die unless $answer =~ /^#/;
-
-        for(my $r = 0; $r < $results; ++$r) {
-            my $match = <A>;
+        if ($results != 0) {
+            print "  false positive\n";
+            $false_positives++;
         }
     }
-    elsif ($info =~ /^>doc:[^:]*:[^:]*:[^:]*:(.+)$/) {
+    elsif ($info =~ /^>doc:([^:]*):[^:]*:[^:]*:(.+)$/) {
         ++$positives;
 
         my $answer = <A>;
         chomp($answer);
+        my @a = split('\t', $answer);
 
         my $target = $1;
 
-        if ($answer =~ /^\*$query (\d+)$/) {
-            my $results = $1;
+        die($answer) unless $a[0] =~ /^transcript# ([0-9]+)$/;
+        shift(@a);
 
-            $answer = <A>;
-            chomp($answer);
-            die unless $answer =~ /^#/;
-
-            for(my $r = 0; $r < $results; ++$r) {
-                my $match = <A>;
-                die unless $match =~ /^allsome\/([^.]+)\.bf\.bv\.rrr$/;
-                if ($1 eq $target) {
-                    print "Target $target matched\n";
-                    $target = "";
-                }
-            }
-
-            if ($target) {
-                print "Target $target NOT MATCHED!\n";
-                $false_negatives++;
-            }
+        if ($a[$target]) {
+            print "  target $target matched\n";
+            $target = "";
         }
         else {
-            die($answer);
+            print "  target $target NOT MATCHED!\n";
+            $false_negatives++;
         }
-    }
-    else {
-        die($info);
     }
 }
 

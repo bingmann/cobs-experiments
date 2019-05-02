@@ -9,6 +9,8 @@ my $afile = shift(@ARGV);
 open(Q, "$qfile") or die("First argument: queries.fa");
 open(A, "$afile") or die("Second argument: results.txt");
 
+my $positives = 0;
+my $negatives = 0;
 my $false_positives = 0;
 my $false_negatives = 0;
 
@@ -23,6 +25,8 @@ while (my $info = <Q>) {
 
     print "Q: $info\n";
     if ($info =~ /^>negative[0-9]+/) {
+        ++$negatives;
+
         die($answer) unless $answer =~ /^seq[0-9]+\s([0-9]+)$/;
 
         # count results
@@ -37,6 +41,8 @@ while (my $info = <Q>) {
         $false_positives++ if $results != 0;
     }
     elsif ($info =~ /^>doc:[^:]*:[^:]*:[^:]*:(.+)$/) {
+        ++$positives;
+
         my $target = $1;
 
         die($answer) unless $answer =~ /^seq[0-9]+\s([0-9]+)$/;
@@ -61,7 +67,14 @@ while (my $info = <Q>) {
     }
 }
 
+print "positives: $positives\n";
+print "negatives: $negatives\n";
 print "false_positives: $false_positives\n";
 print "false_negatives: $false_negatives\n";
 
+my $RESULT = $ENV{RESULT} || "";
+print "RESULT $RESULT positives=$positives negatives=$negatives false_positives=$false_positives false_negatives=$false_negatives\n";
+
 die("has false negatives") if $false_negatives != 0;
+
+exit(0);

@@ -115,13 +115,35 @@ fi
 cd $DATADIR
 
 for Q in 1 100 1000 10000; do
-    run_exp "experiment=howde phase=query$Q" \
-            $BT query --tree=howde/howde-howde.sbt --threshold=0.5 queries$Q.fa \
-            --out=howde-results$Q.txt \
-            >& howde-query$Q.log
 
-    perl $SCRIPT_DIR/check-howde-cobs-results.pl howde-results$Q.txt \
-         >& howde-check_results$Q.log
+    run_exp "experiment=howde phase=query$Q.0" \
+            $BT query --tree=howde/howde-howde.sbt --threshold=0.5 queries$Q.fa \
+            --out=howde-results$Q.0.txt \
+            >& howde-query$Q.0.log
+
+    RESULT="experiment=howde phase=check$Q.0" \
+    perl $SCRIPT_DIR/check-howde-cobs-results.pl howde-results$Q.0.txt \
+         >& howde-check_results$Q.0.log
+
+    NO_DROP_CACHE=1 \
+    run_exp "experiment=howde phase=query$Q.1" \
+            $BT query --tree=howde/howde-howde.sbt --threshold=0.5 queries$Q.fa \
+            --out=howde-results$Q.1.txt \
+            >& howde-query$Q.1.log
+
+    RESULT="experiment=howde phase=check$Q.1" \
+    perl $SCRIPT_DIR/check-howde-cobs-results.pl howde-results$Q.1.txt \
+         >& howde-check_results$Q.1.log
+
+    NO_DROP_CACHE=1 \
+    run_exp "experiment=howde phase=query$Q.2" \
+            $BT query --tree=howde/howde-howde.sbt --threshold=0.5 queries$Q.fa \
+            --out=howde-results$Q.2.txt \
+            >& howde-query$Q.2.log
+
+    RESULT="experiment=howde phase=check$Q.2" \
+    perl $SCRIPT_DIR/check-howde-cobs-results.pl howde-results$Q.2.txt \
+         >& howde-check_results$Q.2.log
 done
 
 ################################################################################

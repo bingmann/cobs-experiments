@@ -74,4 +74,6 @@ if [ ! -e queries10000.fa ]; then
     grep -v '^>' queries10000.fa > queries10000-plain.fa
 fi
 
+rm -rf unitigs
+
 ################################################################################

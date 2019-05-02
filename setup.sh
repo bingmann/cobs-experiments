@@ -250,7 +250,7 @@ build_berkeleydb() {
 }
 
 build_rocksdb() {
-    VER=5.18.3
+    VER=6.0.2
     [ -e $BASEDIR/include/rocksdb ] && return
 
     cd $BASEDIR
@@ -262,7 +262,10 @@ build_rocksdb() {
 
     mkdir rocksdb-$VER/build
     cd rocksdb-$VER/build
-    cmake .. -DCMAKE_INSTALL_PREFIX=${BASEDIR} -DWITH_SNAPPY=YES
+    cmake .. -DCMAKE_INSTALL_PREFIX=${BASEDIR} \
+          -DCMAKE_BUILD_TYPE=Release -DWITH_TESTS=OFF \
+          -DWITH_SNAPPY=YES -DWITH_LZ4=YES \
+          -DWITH_TBB=YES -DWITH_NUMA=YES -DWITH_RUNTIME_DEBUG=NO
     make -j $NCORES install
     make clean
 }
@@ -298,6 +301,31 @@ build_bigsi() {
 }
 
 ################################################################################
+# SeqOthello
+
+build_seqothello() {
+    build_jellyfish
+
+    cd $BASEDIR
+
+    rm -rf SeqOthello
+    git clone --recursive https://github.com/LiuBioinfo/SeqOthello.git
+
+    cd SeqOthello
+    git checkout $(git rev-list -n 1 --before="$GITDATE" master)
+    git submodule update
+
+    # replace Jellyfish with compiled version
+    rm -rvf Jellyfish
+    ln -s ../jellyfish-* Jellyfish
+
+    mkdir build
+    cd build
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${BASEDIR}
+    make -j $NCORES all
+}
+
+################################################################################
 
 build_all() {
     build_seqtk
@@ -307,6 +335,7 @@ build_all() {
     build_howde
     build_mantis
     build_bigsi
+    build_seqothello
 }
 
 $1

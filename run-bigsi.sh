@@ -25,12 +25,12 @@ ulimit -n 1000000
 if [ -e fasta ]; then
 
     K=20
-    max_doc=$($HOME/cobs/build/cobs doc_list -k 20 fasta/ | awk '/^maximum 20-mer/ { print $3 }')
+    max_doc=$($COBS doc-list -k 20 fasta/ |& awk '/^maximum 20-mer/ { print $3 }')
 
 elif [ -e cortex ]; then
 
     K=31
-    max_doc=$($HOME/cobs/build/cobs doc_list -k 31 cortex/ | awk '/^maximum 31-mer/ { print $3 }')
+    max_doc=$($COBS doc-list -k 31 cortex/ |& awk '/^maximum 31-mer/ { print $3 }')
 
 fi
 
@@ -43,7 +43,7 @@ cat > bigsi-config.yaml <<EOF
 ## Example config using rocksdb
 h: 1
 k: $K
-m: $BF_SIZE
+m: ${BF_SIZE}
 nproc: $NCORES
 low_mem_build: false
 storage-engine: rocksdb
@@ -52,6 +52,7 @@ storage-config:
   options:
     create_if_missing: true
     max_open_files: 5000
+    # compression: lz4
   read_only: false
 EOF
 
@@ -115,7 +116,7 @@ elif [ -e cortex ]; then
              $BIGSI bloom --config bigsi-config.yaml $CTX "$OUT"
         echo -ne "\\0"
     done
-) | xargs -0 -n 1 -P $NCORES sh -c' \
+) | xargs -0 -r -n 1 -P $NCORES sh -c' \
     |& tee bigsi-bloom.log
 
 fi
@@ -123,8 +124,12 @@ fi
 ################################################################################
 # construct and compress BIGSI index
 
+(for f in bigsi/bloom/*; do
+     echo -e "$f\t$(basename $f)"
+ done) > bigsi-bloom.txt
+
 run_exp "experiment=bigsi phase=build" \
-    $BIGSI build --config bigsi-config.yaml bigsi/bloom/* \
+    $BIGSI build --config bigsi-config.yaml --from_file bigsi-bloom.txt \
     |& tee bigsi-build.log
 
 save_size "experiment=bigsi phase=index" \
@@ -135,13 +140,12 @@ fi
 ################################################################################
 # run queries on BIGSI
 
-$COBS generate-queries cortex --positive 10 --negative 10 \
-      -k $K -s $((K + 1)) -N -o bigsi-queries.fa \
-    |& tee bigsi-generate_queries.log
-
-run_exp "experiment=bigsi phase=query" \
-    $BIGSI bulk_search --config bigsi-config.yaml -t 0.5 \
-    bigsi-queries.fa \
-    |& tee bigsi-query.log
+for Q in 1 100 1000 10000; do
+    head -n 200 queries$Q.fa > queries$Q-short.fa
+    run_exp "experiment=bigsi phase=query$Q" \
+            $BIGSI bulk_search --config bigsi-config.yaml -t 0.5 \
+            queries$Q-short.fa \
+        |& tee bigsi-query$Q.log
+done
 
 ################################################################################
