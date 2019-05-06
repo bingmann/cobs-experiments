@@ -116,7 +116,7 @@ for Q in 1 100 1000 10000; do
     # due to expansion with 1 random character
 
     run_exp "experiment=allsome phase=query$Q.0" \
-            $BT query --query-threshold 0.5 \
+            $BT query --query-threshold 0.9 \
             allsome-compressedbloomtreefile queries$Q.fa allsome-results$Q.0.txt \
             >& allsome-query$Q.0.log
 
@@ -126,7 +126,7 @@ for Q in 1 100 1000 10000; do
 
     NO_DROP_CACHE=1 \
     run_exp "experiment=allsome phase=query$Q.1" \
-            $BT query --query-threshold 0.5 \
+            $BT query --query-threshold 0.9 \
             allsome-compressedbloomtreefile queries$Q.fa allsome-results$Q.1.txt \
             >& allsome-query$Q.1.log
 
@@ -136,7 +136,7 @@ for Q in 1 100 1000 10000; do
 
     NO_DROP_CACHE=1 \
     run_exp "experiment=allsome phase=query$Q.2" \
-            $BT query --query-threshold 0.5 \
+            $BT query --query-threshold 0.9 \
             allsome-compressedbloomtreefile queries$Q.fa allsome-results$Q.2.txt \
             >& allsome-query$Q.2.log
 

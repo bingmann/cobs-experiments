@@ -111,7 +111,7 @@ for Q in 1 100 1000 10000; do
     # due to expansion with 1 random character
 
     run_exp "experiment=ssbt phase=query$Q.0" \
-            $BT query --query-threshold 0.5 \
+            $BT query --query-threshold 0.9 \
             ssbt-compressedbloomtreefile queries$Q-plain.fa ssbt-results$Q.0.txt \
             >& ssbt-query$Q.0.log
 
@@ -121,7 +121,7 @@ for Q in 1 100 1000 10000; do
 
     NO_DROP_CACHE=1 \
     run_exp "experiment=ssbt phase=query$Q.1" \
-            $BT query --query-threshold 0.5 \
+            $BT query --query-threshold 0.9 \
             ssbt-compressedbloomtreefile queries$Q-plain.fa ssbt-results$Q.1.txt \
             >& ssbt-query$Q.1.log
 
@@ -131,7 +131,7 @@ for Q in 1 100 1000 10000; do
 
     NO_DROP_CACHE=1 \
     run_exp "experiment=ssbt phase=query$Q.2" \
-            $BT query --query-threshold 0.5 \
+            $BT query --query-threshold 0.9 \
             ssbt-compressedbloomtreefile queries$Q-plain.fa ssbt-results$Q.2.txt \
             >& ssbt-query$Q.2.log
 

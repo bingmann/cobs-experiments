@@ -17,7 +17,7 @@ bash -c "$SCRIPT_DIR/run-allsome.sh"
 bash -c "$SCRIPT_DIR/run-howde.sh"
 bash -c "$SCRIPT_DIR/run-mantis.sh"
 bash -c "$SCRIPT_DIR/run-seqothello.sh"
-#bash -c "$SCRIPT_DIR/run-bigsi.sh"
+bash -c "$SCRIPT_DIR/run-bigsi.sh"
 bash -c "$SCRIPT_DIR/run-cobs.sh"
 
 ################################################################################

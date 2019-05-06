@@ -117,7 +117,7 @@ cd $DATADIR
 for Q in 1 100 1000 10000; do
 
     run_exp "experiment=howde phase=query$Q.0" \
-            $BT query --tree=howde/howde-howde.sbt --threshold=0.5 queries$Q.fa \
+            $BT query --tree=howde/howde-howde.sbt --threshold=0.9 queries$Q.fa \
             --out=howde-results$Q.0.txt \
             >& howde-query$Q.0.log
 
@@ -127,7 +127,7 @@ for Q in 1 100 1000 10000; do
 
     NO_DROP_CACHE=1 \
     run_exp "experiment=howde phase=query$Q.1" \
-            $BT query --tree=howde/howde-howde.sbt --threshold=0.5 queries$Q.fa \
+            $BT query --tree=howde/howde-howde.sbt --threshold=0.9 queries$Q.fa \
             --out=howde-results$Q.1.txt \
             >& howde-query$Q.1.log
 
@@ -137,7 +137,7 @@ for Q in 1 100 1000 10000; do
 
     NO_DROP_CACHE=1 \
     run_exp "experiment=howde phase=query$Q.2" \
-            $BT query --tree=howde/howde-howde.sbt --threshold=0.5 queries$Q.fa \
+            $BT query --tree=howde/howde-howde.sbt --threshold=0.9 queries$Q.fa \
             --out=howde-results$Q.2.txt \
             >& howde-query$Q.2.log
 

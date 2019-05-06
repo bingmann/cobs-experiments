@@ -141,11 +141,21 @@ fi
 # run queries on BIGSI
 
 for Q in 1 100 1000 10000; do
-    head -n 200 queries$Q.fa > queries$Q-short.fa
-    run_exp "experiment=bigsi phase=query$Q" \
-            $BIGSI bulk_search --config bigsi-config.yaml -t 0.5 \
+    head -n 1000 queries$Q.fa > queries$Q-short.fa
+    run_exp "experiment=bigsi phase=query$Q.0" \
+            $BIGSI bulk_search --config bigsi-config.yaml -t 0.9 --stream --format csv \
             queries$Q-short.fa \
-        |& tee bigsi-query$Q.log
+        >& bigsi-query$Q.0.log
+
+    run_exp "experiment=bigsi phase=query$Q.1" \
+            $BIGSI bulk_search --config bigsi-config.yaml -t 0.9 --stream --format csv \
+            queries$Q-short.fa \
+        >& bigsi-query$Q.1.log
+
+    run_exp "experiment=bigsi phase=query$Q.2" \
+            $BIGSI bulk_search --config bigsi-config.yaml -t 0.9 --stream --format csv \
+            queries$Q-short.fa \
+        >& bigsi-query$Q.2.log
 done
 
 ################################################################################
