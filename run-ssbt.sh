@@ -115,7 +115,7 @@ for Q in 1 100 1000 10000; do
             ssbt-compressedbloomtreefile queries$Q-plain.fa ssbt-results$Q.0.txt \
             >& ssbt-query$Q.0.log
 
-    RESULT="experiment=ssbt phase=check$Q.0" \
+    RESULT="experiment=ssbt dataset=$DATASET phase=check$Q.0" \
     perl $SCRIPT_DIR/check-sbt-results.pl queries$Q.fa ssbt-results$Q.0.txt \
          >& ssbt-check_results$Q.0.log
 
@@ -125,7 +125,7 @@ for Q in 1 100 1000 10000; do
             ssbt-compressedbloomtreefile queries$Q-plain.fa ssbt-results$Q.1.txt \
             >& ssbt-query$Q.1.log
 
-    RESULT="experiment=ssbt phase=check$Q.1" \
+    RESULT="experiment=ssbt dataset=$DATASET phase=check$Q.1" \
     perl $SCRIPT_DIR/check-sbt-results.pl queries$Q.fa ssbt-results$Q.1.txt \
          >& ssbt-check_results$Q.1.log
 
@@ -135,7 +135,7 @@ for Q in 1 100 1000 10000; do
             ssbt-compressedbloomtreefile queries$Q-plain.fa ssbt-results$Q.2.txt \
             >& ssbt-query$Q.2.log
 
-    RESULT="experiment=ssbt phase=check$Q.2" \
+    RESULT="experiment=ssbt dataset=$DATASET phase=check$Q.2" \
     perl $SCRIPT_DIR/check-sbt-results.pl queries$Q.fa ssbt-results$Q.2.txt \
          >& ssbt-check_results$Q.2.log
 done

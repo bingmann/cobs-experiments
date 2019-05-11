@@ -59,7 +59,7 @@ while (my $info = <Q>) {
 
             for(my $r = 0; $r < $results; ++$r) {
                 my $match = <A>;
-                die unless $match =~ /^allsome\/([^.]+)\.bf\.bv\.rrr$/;
+                die unless $match =~ /^allsome\/([^.]+)\.bf-allsome\.bv\.rrr$/;
                 if ($1 eq $target) {
                     print "Target $target matched\n";
                     $target = "";

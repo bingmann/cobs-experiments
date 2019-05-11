@@ -48,7 +48,7 @@ save_size() {
     shift
 
     # determine total file size
-    SIZE=$(du -ac "$@" | tail -1 | cut -f 1)
+    SIZE=$(du -ac "$@" | tail -n 1 | cut -f 1)
 
     echo "RESULT $exp info=size dataset=$DATASET size=$SIZE"
 }

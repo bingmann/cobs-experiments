@@ -13,6 +13,7 @@ my $positives = 0;
 my $negatives = 0;
 my $false_positives = 0;
 my $false_negatives = 0;
+my $false_positives_count = 0;
 
 my $answer = <A>;
 chomp($answer);
@@ -70,10 +71,11 @@ while (my $info = <Q>) {
 print "positives: $positives\n";
 print "negatives: $negatives\n";
 print "false_positives: $false_positives\n";
+print "false_positives_count: $false_positives_count\n";
 print "false_negatives: $false_negatives\n";
 
 my $RESULT = $ENV{RESULT} || "";
-print "RESULT $RESULT positives=$positives negatives=$negatives false_positives=$false_positives false_negatives=$false_negatives\n";
+print "RESULT $RESULT positives=$positives negatives=$negatives false_positives=$false_positives false_positives_count=$false_positives_count false_negatives=$false_negatives\n";
 
 die("has false negatives") if $false_negatives != 0;
 

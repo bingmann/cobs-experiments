@@ -27,7 +27,7 @@ while (my $info = <A>) {
             my $match = <A>;
         }
     }
-    elsif ($info =~ /^*doc:[^:]*:[^:]*:[^:]*:([^ ]+)\s+([0-9]+)$/) {
+    elsif ($info =~ /^\*doc:[^:]*:[^:]*:[^:]*:([^ ]+)\s+([0-9]+)$/) {
         ++$positives;
 
         my $target = $1;

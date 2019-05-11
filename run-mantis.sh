@@ -102,7 +102,7 @@ for Q in 1 100 1000 10000; do
             $PWD/queries$Q-plain.fa \
         >& mantis-query$Q.0.log
 
-    RESULT="experiment=mantis phase=check$Q.0" \
+    RESULT="experiment=mantis dataset=$DATASET phase=check$Q.0" \
     perl $SCRIPT_DIR/check-mantis-results.pl queries$Q.fa mantis-results$Q.0.txt \
         >& mantis-check_results$Q.0.log
 
@@ -112,7 +112,7 @@ for Q in 1 100 1000 10000; do
             $PWD/queries$Q-plain.fa \
         >& mantis-query$Q.1.log
 
-    RESULT="experiment=mantis phase=check$Q.1" \
+    RESULT="experiment=mantis dataset=$DATASET phase=check$Q.1" \
     perl $SCRIPT_DIR/check-mantis-results.pl queries$Q.fa mantis-results$Q.1.txt \
         >& mantis-check_results$Q.1.log
 
@@ -122,7 +122,7 @@ for Q in 1 100 1000 10000; do
             $PWD/queries$Q-plain.fa \
         >& mantis-query$Q.2.log
 
-    RESULT="experiment=mantis phase=check$Q.2" \
+    RESULT="experiment=mantis dataset=$DATASET phase=check$Q.2" \
     perl $SCRIPT_DIR/check-mantis-results.pl queries$Q.fa mantis-results$Q.2.txt \
         >& mantis-check_results$Q.2.log
 

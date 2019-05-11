@@ -15,7 +15,7 @@ BASEDIR=${HOME}/dna/
 ulimit -n 1000000
 
 ################################################################################
-# use COBS to estimate bloom filter size
+# select K
 
 if [ -e fasta ]; then
     K=20
@@ -25,7 +25,7 @@ fi
 
 if [ ! -e cobs-index.cobs_classic ]; then
 ################################################################################
-# construct compressed COBS index
+# construct compressed COBS Classic index
 
 run_exp "experiment=cobs_classic phase=build" \
     $COBS classic-construct --term-size $K --clobber cortex cobs-index.cobs_classic \
@@ -38,33 +38,17 @@ save_size "experiment=cobs_classic phase=index" \
 
 fi
 
-if [ ! -e cobs-index.cobs_compact ]; then
 ################################################################################
-# construct compressed COBS index
-
-run_exp "experiment=cobs_compact phase=build" \
-    $COBS compact-construct --term-size $K --clobber cortex cobs-index.cobs_compact \
-    --false-positive-rate 0.3 --canonicalize \
-    |& tee cobs_comapct-build.log
-
-save_size "experiment=cobs_compact phase=index" \
-    cobs-index.cobs_compact \
-    |& tee cobs_compact-indexsize.log
-
-fi
-################################################################################
-# run queries on COBS
+# run queries on COBS Classic
 
 for Q in 1 100 1000 10000; do
-    ################################################################################
-    # Classic Index
     run_exp "experiment=cobs_classic phase=query$Q.0" \
             $COBS query --threshold 0.9 -i cobs-index.cobs_classic \
             --load-complete -f queries$Q.fa \
             > cobs_classic-results$Q.0.out \
             2> cobs_classic-results$Q.log
 
-    RESULT="experiment=cobs_classic phase=check$Q.0" \
+    RESULT="experiment=cobs_classic dataset=$DATASET phase=check$Q.0" \
     perl $SCRIPT_DIR/check-howde-cobs-results.pl cobs_classic-results$Q.0.out \
          >& cobs_classic-check_results$Q.0.log
 
@@ -75,7 +59,7 @@ for Q in 1 100 1000 10000; do
             > cobs_classic-results$Q.1.out \
             2> cobs_classic-results$Q.1.log
 
-    RESULT="experiment=cobs_classic phase=check$Q.1" \
+    RESULT="experiment=cobs_classic dataset=$DATASET phase=check$Q.1" \
     perl $SCRIPT_DIR/check-howde-cobs-results.pl cobs_classic-results$Q.1.out \
          >& cobs_classic-check_results$Q.1.log
 
@@ -86,43 +70,9 @@ for Q in 1 100 1000 10000; do
             > cobs_classic-results$Q.2.out \
             2> cobs_classic-results$Q.2.log
 
-    RESULT="experiment=cobs_classic phase=check$Q.2" \
+    RESULT="experiment=cobs_classic dataset=$DATASET phase=check$Q.2" \
     perl $SCRIPT_DIR/check-howde-cobs-results.pl cobs_classic-results$Q.2.out \
          >& cobs_classic-check_results$Q.2.log
-
-    ################################################################################
-    # Compact Index
-    run_exp "experiment=cobs_compact phase=query$Q.0" \
-            $COBS query --threshold 0.9 -i cobs-index.cobs_compact \
-            --load-complete -f queries$Q.fa \
-            > cobs_compact-results$Q.0.out \
-            2> cobs_compact-results$Q.0.log
-
-    RESULT="experiment=cobs_compact phase=check$Q.0" \
-    perl $SCRIPT_DIR/check-howde-cobs-results.pl cobs_compact-results$Q.0.out \
-         >& cobs_compact-check_results$Q.0.log
-
-    NO_DROP_CACHE=1 \
-    run_exp "experiment=cobs_compact phase=query$Q.1" \
-            $COBS query --threshold 0.9 -i cobs-index.cobs_compact \
-            --load-complete -f queries$Q.fa \
-            > cobs_compact-results$Q.1.out \
-            2> cobs_compact-results$Q.1.log
-
-    RESULT="experiment=cobs_compact phase=check$Q.1" \
-    perl $SCRIPT_DIR/check-howde-cobs-results.pl cobs_compact-results$Q.1.out \
-         >& cobs_compact-check_results$Q.1.log
-
-    NO_DROP_CACHE=1 \
-    run_exp "experiment=cobs_compact phase=query$Q.2" \
-            $COBS query --threshold 0.9 -i cobs-index.cobs_compact \
-            --load-complete -f queries$Q.fa \
-            > cobs_compact-results$Q.2.out \
-            2> cobs_compact-results$Q.2.log
-
-    RESULT="experiment=cobs_compact phase=check$Q.2" \
-    perl $SCRIPT_DIR/check-howde-cobs-results.pl cobs_compact-results$Q.2.out \
-         >& cobs_compact-check_results$Q.2.log
 done
 
 ################################################################################

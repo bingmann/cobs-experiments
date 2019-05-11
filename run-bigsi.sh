@@ -48,7 +48,7 @@ nproc: $NCORES
 low_mem_build: false
 storage-engine: rocksdb
 storage-config:
-  filename: bigsi/bigsi.rocksdb
+  filename: bigsi/bigsi.db
   options:
     create_if_missing: true
     max_open_files: 5000
@@ -56,7 +56,20 @@ storage-config:
   read_only: false
 EOF
 
-if [ ! -e bigsi/bigsi.rocksdb ]; then
+# make YAML config
+cat > bigsi-config.yaml <<EOF
+## Example config using berkeleydb
+h: 1
+k: $K
+m: ${BF_SIZE}
+low_mem_build: false
+max_build_mem_bytes: 100GB
+storage-engine: berkeleydb
+storage-config:
+  filename: bigsi/bigsi.db
+EOF
+
+if [ ! -e bigsi/bigsi.db ]; then
 ################################################################################
 # construct bloom filters in parallel
 
@@ -110,7 +123,7 @@ elif [ -e cortex ]; then
     for f in cortex/*; do
         CTX="$f/*/*.ctx"
         OUT="bigsi/bloom/$(basename "$f").bloom"
-        #[ -e "$OUT" ] && continue
+        [ -e "$OUT" ] && continue
 
         echo -n \
              $BIGSI bloom --config bigsi-config.yaml $CTX "$OUT"
@@ -133,7 +146,7 @@ run_exp "experiment=bigsi phase=build" \
     |& tee bigsi-build.log
 
 save_size "experiment=bigsi phase=index" \
-          bigsi/bigsi.rocksdb \
+          bigsi/bigsi.db \
     |& tee bigsi-indexsize.log
 
 fi

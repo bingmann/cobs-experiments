@@ -121,7 +121,7 @@ for Q in 1 100 1000 10000; do
             --out=howde-results$Q.0.txt \
             >& howde-query$Q.0.log
 
-    RESULT="experiment=howde phase=check$Q.0" \
+    RESULT="experiment=howde dataset=$DATASET phase=check$Q.0" \
     perl $SCRIPT_DIR/check-howde-cobs-results.pl howde-results$Q.0.txt \
          >& howde-check_results$Q.0.log
 
@@ -131,7 +131,7 @@ for Q in 1 100 1000 10000; do
             --out=howde-results$Q.1.txt \
             >& howde-query$Q.1.log
 
-    RESULT="experiment=howde phase=check$Q.1" \
+    RESULT="experiment=howde dataset=$DATASET phase=check$Q.1" \
     perl $SCRIPT_DIR/check-howde-cobs-results.pl howde-results$Q.1.txt \
          >& howde-check_results$Q.1.log
 
@@ -141,7 +141,7 @@ for Q in 1 100 1000 10000; do
             --out=howde-results$Q.2.txt \
             >& howde-query$Q.2.log
 
-    RESULT="experiment=howde phase=check$Q.2" \
+    RESULT="experiment=howde dataset=$DATASET phase=check$Q.2" \
     perl $SCRIPT_DIR/check-howde-cobs-results.pl howde-results$Q.2.txt \
          >& howde-check_results$Q.2.log
 done
