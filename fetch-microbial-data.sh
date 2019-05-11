@@ -28,7 +28,7 @@ LIST=$(cat $1)
         [ -e "$l/.complete" ] && continue
 
         echo -n \
-             wget -nv -m -c -nH --cut-dirs=6 \
+             wget -nv -m -c -nH --cut-dirs=6 --exclude-directories uncleaned \
              ftp://ftp.ebi.ac.uk/pub/software/bigsi/nat_biotech_2018/ctx/${l:0:6}/$l/ \
              \&\& touch $l/.complete
         echo -ne '\0'

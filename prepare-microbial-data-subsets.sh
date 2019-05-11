@@ -9,11 +9,6 @@ set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
-if [ "$(basename $PWD)" != "microbial-data" -o ! -e "cortex" ]; then
-    echo "Run in microbial-data directory"
-    exit
-fi
-
 make_sublist() {
     if [ ! -e $SCRIPT_DIR/list-microbial-data-$1.txt ]; then
         sort -R $SCRIPT_DIR/list-microbial-$2.txt \
@@ -37,8 +32,9 @@ expand_list() {
     fi
 }
 
-#expand_list 20000 40000
+#expand_list 50000 100000
 
+make_sublist 50000 data-100000
 make_sublist 25000 data-50000
 make_sublist 10000 data-20000
 make_sublist 5000 data-10000
@@ -48,7 +44,12 @@ make_sublist 500 data-1000
 make_sublist 250 data-500
 make_sublist 100 data-250
 
-for s in 100 250 500 1000 2500 5000 10000 25000; do
+if [ "$(basename $PWD)" != "microbial-data" -o ! -e "cortex" ]; then
+    echo "Run in microbial-data directory"
+    exit
+fi
+
+for s in 100 250 500 1000 2500 5000 10000 25000 50000 100000; do
     mkdir -p ../microbial-data$s/cortex/
 
     for f in $(cat $SCRIPT_DIR/list-microbial-data-$s.txt); do

@@ -16,14 +16,14 @@ if [ "$(basename $PWD)" != "microbial-data" -o ! -e "cortex" ]; then
 fi
 
 # delete stuff
-find -iname *.bloom* -delete
-find -iname *.csv* -delete
-find -iname *.ctx_braken.report* -delete
-find -iname *.ctx_kraken.report* -delete
-find -iname *.ctx_kraken_bracken.report* -delete
-find -iname *.log* -delete
-find -iname *.msh* -delete
-find -iname *.out* -delete
+find -iname *.bloom* -ls -delete
+find -iname *.csv* -ls -delete
+find -iname *.ctx_braken.report* -ls -delete
+find -iname *.ctx_kraken.report* -ls -delete
+find -iname *.ctx_kraken_bracken.report* -ls -delete
+find -iname *.log* -ls -delete
+find -iname *.msh* -ls -delete
+find -iname *.out* -ls -delete
 
 # uncompress
 find -iname *.ctx.bz2 | xargs -r -P $NCORES -n 1 bunzip2 -vf
