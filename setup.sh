@@ -283,9 +283,9 @@ build_bigsi() {
     echo "export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}\${LD_LIBRARY_PATH:+:}${BASEDIR}/lib" >> bin/activate
     source bin/activate
 
-    git clone -b v0.3.4 https://github.com/Phelimb/BIGSI.git
+    git clone -b master https://github.com/Phelimb/BIGSI.git
     cd BIGSI
-    #git checkout $(git rev-list -n 1 --before="$GITDATE" master)
+    git checkout $(git rev-list -n 1 --before="2019-05-16" master)
 
     export BERKELEYDB_DIR=${BASEDIR}
     pip3 install bsddb3

@@ -30,7 +30,7 @@ if [ ! -e cobs-index.cobs_compact ]; then
 run_exp "experiment=cobs_compact phase=build" \
     $COBS compact-construct --term-size $K --clobber cortex cobs-index.cobs_compact \
     --false-positive-rate 0.3 --canonicalize \
-    |& tee cobs_comapct-build.log
+    |& tee cobs_compact-build.log
 
 save_size "experiment=cobs_compact phase=index" \
     cobs-index.cobs_compact \

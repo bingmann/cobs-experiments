@@ -62,6 +62,7 @@ cat > bigsi-config.yaml <<EOF
 h: 1
 k: $K
 m: ${BF_SIZE}
+nproc: $NCORES
 low_mem_build: false
 max_build_mem_bytes: 100GB
 storage-engine: berkeleydb
@@ -112,7 +113,7 @@ if [ -e fasta ]; then
 ) | xargs -0 -n 1 -P $NCORES sh -c' \
     |& tee bigsi-bloom.log
 
-elif [ -e cortex ]; then
+elif [ -e cortex -a ! -e bigsi/bloom.done ]; then
 
     # construct bloom filters directly from cortex
     mkdir -p bigsi/bloom
@@ -123,7 +124,7 @@ elif [ -e cortex ]; then
     for f in cortex/*; do
         CTX="$f/*/*.ctx"
         OUT="bigsi/bloom/$(basename "$f").bloom"
-        [ -e "$OUT" ] && continue
+        #[ -e "$OUT" ] && continue
 
         echo -n \
              $BIGSI bloom --config bigsi-config.yaml $CTX "$OUT"
@@ -131,6 +132,8 @@ elif [ -e cortex ]; then
     done
 ) | xargs -0 -r -n 1 -P $NCORES sh -c' \
     |& tee bigsi-bloom.log
+
+    touch bigsi/bloom.done
 
 fi
 
@@ -154,21 +157,41 @@ fi
 # run queries on BIGSI
 
 for Q in 1 100 1000 10000; do
-    head -n 1000 queries$Q.fa > queries$Q-short.fa
     run_exp "experiment=bigsi phase=query$Q.0" \
             $BIGSI bulk_search --config bigsi-config.yaml -t 0.9 --stream --format csv \
-            queries$Q-short.fa \
-        >& bigsi-query$Q.0.log
+            queries$Q.fa \
+        >& bigsi-results$Q.0.out
 
+
+    grep -v '^"' bigsi-results$Q.0.out > bigsi-results$Q.0.log
+
+    RESULT="experiment=bigsi dataset=$DATASET phase=check$Q.0" \
+    perl $SCRIPT_DIR/check-bigsi-results.pl queries$Q.fa bigsi-results$Q.0.out \
+         >& bigsi-check_results$Q.0.log
+
+    NO_DROP_CACHE=1 \
     run_exp "experiment=bigsi phase=query$Q.1" \
             $BIGSI bulk_search --config bigsi-config.yaml -t 0.9 --stream --format csv \
-            queries$Q-short.fa \
-        >& bigsi-query$Q.1.log
+            queries$Q.fa \
+        >& bigsi-results$Q.1.out
 
+    grep -v '^"' bigsi-results$Q.1.out > bigsi-results$Q.1.log
+
+    RESULT="experiment=bigsi dataset=$DATASET phase=check$Q.1" \
+    perl $SCRIPT_DIR/check-bigsi-results.pl queries$Q.fa bigsi-results$Q.1.out \
+         >& bigsi-check_results$Q.1.log
+
+    NO_DROP_CACHE=1 \
     run_exp "experiment=bigsi phase=query$Q.2" \
             $BIGSI bulk_search --config bigsi-config.yaml -t 0.9 --stream --format csv \
-            queries$Q-short.fa \
-        >& bigsi-query$Q.2.log
+            queries$Q.fa \
+        >& bigsi-results$Q.2.out
+
+    grep -v '^"' bigsi-results$Q.2.out > bigsi-results$Q.2.log
+
+    RESULT="experiment=bigsi dataset=$DATASET phase=check$Q.2" \
+    perl $SCRIPT_DIR/check-bigsi-results.pl queries$Q.fa bigsi-results$Q.2.out \
+         >& bigsi-check_results$Q.2.log
 done
 
 ################################################################################
