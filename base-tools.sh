@@ -39,7 +39,7 @@ run_exp() {
     read=$(((after_reads - before_reads) * 512))
     write=$(((after_writes - before_writes) * 512))
     fill=$(((after_fill - before_fill) * 1024))
-    echo "RESULT $exp info=disk dataset=$DATASET read=$read write=$write fill=$fill"
+    echo "RESULT $exp info=disk dataset=$DATASET read=$read write=$write fill=$fill" > /dev/stderr
 }
 
 # calculate total size of files listed and output a RESULT line
@@ -50,7 +50,7 @@ save_size() {
     # determine total file size
     SIZE=$(du -ac "$@" | tail -n 1 | cut -f 1)
 
-    echo "RESULT $exp info=size dataset=$DATASET size=$SIZE"
+    echo "RESULT $exp info=size dataset=$DATASET size=$SIZE" > /dev/stderr
 }
 
 ################################################################################
