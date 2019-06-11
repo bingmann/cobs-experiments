@@ -45,7 +45,8 @@ build_jellyfish() {
 
     cd jellyfish-$VER
     ./configure --prefix=$BASEDIR
-    make -j $NCORES install
+    make -j $NCORES
+    make install
     make clean
 
     cd $BASEDIR/include
@@ -326,16 +327,42 @@ build_seqothello() {
 }
 
 ################################################################################
+# COBS
+
+build_cobs() {
+    [ -e $BASEDIR/cobs/build/src/cobs ] && return
+
+    cd $BASEDIR
+
+    rm -rf cobs
+    git clone --recursive https://github.com/bingmann/cobs.git
+
+    GITDATE="2019-06-01"
+
+    cd cobs
+    git checkout $(git rev-list -n 1 --before="$GITDATE" master)
+    git submodule update
+
+    mkdir build
+    cd build
+    cmake .. -DCMAKE_BUILD_TYPE=Release
+    make -j $NCORES all
+}
+
+################################################################################
 
 build_all() {
+    mkdir -p $BASEDIR/bin
     build_seqtk
     build_sbt
     build_ssbt
     build_allsome
     build_howde
     build_mantis
+    build_mccortex
     build_bigsi
     build_seqothello
+    build_cobs
 }
 
 $1

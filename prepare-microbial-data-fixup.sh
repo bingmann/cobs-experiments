@@ -10,7 +10,7 @@ set -eo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 NCORES=$(grep -c ^processor /proc/cpuinfo)
 
-if [ "$(basename $PWD)" != "microbial-data" -o ! -e "cortex" ]; then
+if [[ "$(basename $PWD)" != microbial-data* || ! -e "cortex" ]]; then
     echo "Run in microbial-data directory"
     exit
 fi

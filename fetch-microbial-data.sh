@@ -11,7 +11,7 @@ set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
-if [ ! -e $1 ]; then
+if [ ! -e "$1" ]; then
     echo "Please pass an accession list"
     exit
 fi
@@ -20,7 +20,7 @@ if [ -e cortex ]; then
     cd cortex
 fi
 
-LIST=$(cat $1)
+LIST=$(cat "$1")
 
 (
     for l in $LIST; do
