@@ -29,6 +29,16 @@ HowDeSBT         bin        db-4.8.30          include       mantis        sdsl-
 SeqOthello       bloomtree  docs               jellyfish-2.2.10            ntCard-1.1.0   seqtk-1.3
 squeakr
 ```
+
+Next, install the `setuid-drop-disk-caches` tool, which is used to clear the disk caches in the Linux kernel prior to each experiment.
+The tool must be compiled and installed with setuid root flag:
+```
+gcc -O3 -o setuid-drop-disk-caches setuid-drop-disk-caches.c
+sudo cp setuid-drop-disk-caches /usr/bin/setuid-drop-disk-caches
+sudo chown root:root /usr/bin/setuid-drop-disk-caches
+sudo chmod u+s /usr/bin/setuid-drop-disk-caches
+```
+
 ## Step 2: Data Download
 
 You need a large local disk to store the dataset, we will consider this as `/mnt`.
